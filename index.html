@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Laravel</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    <div id="app">
+        <div class="form-container">
+            <div class="form-group">
+                <input type="number" placeholder="user_id" v-model="author_id">
+            </div>
+            <div class="form-group">
+                <input type="text" placeholder="title" v-model="title">
+            </div>
+            <div class="form-group">
+                <textarea name="" id=""  rows="5" placeholder="body" v-model="body"></textarea>
+            </div>
+
+            <div class="form-group" v-if="isAdd">
+               <button @click="CreateBook">Add Book</button>
+               
+            </div>
+            <div class="form-group" v-if="isUpdate">
+                <button @click="UpdateBook">Update Book</button>
+                
+             </div>
+        </div>
+        <section class="container">
+            <div class="card" v-for="book of books" >
+                <div class="card-title">
+                    <h1>{{book.title}}</h1>
+                </div>
+                <div class="card-body">
+                    <p>{{book.body}}</p>
+                </div>
+                <div class="card-body">
+                    <p>{{book.created_at}}</p>
+                    <br>
+                    <a href="#"   @click= "edit_post(book)">
+                        <i class="fa fa-pencil fa-lg text-white"></i>
+                    </a>
+                    <a href="#" @click = "deletePost(book.id)" >
+                       <i class="fa fa-trash fa-lg" ></i>
+                    </a>
+                
+                </div>
+            </div>
+
+                
+                
+        </section>
+        
+    </div>
+    
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script>
+
+new Vue({
+    el:'#app',
+    data:{
+        books:[],
+        title:'',
+        body:'',
+        author_id: "",
+
+        isUpdate: false,
+        isAdd: true,
+        id: ""
+
+    },
+   
+
+    methods:{
+        getBooks(){
+            let url='http://localhost:8000/api/books';
+            axios.get(url).then(response => {
+                console.log(response.data)
+                this.books = response.data;
+            });
+
+        },
+        CreateBook(){
+            console.log({author_id:parseInt(this.author_id), title:this.title, body:this.body})
+            book=({author_id:parseInt(this.author_id), title:this.title, body:this.body});
+            let url='http://localhost:8000/api/books';
+            axios.post(url,book).then(response => {
+                this.getBooks();
+              
+            })
+            this.user_id = "";
+            this.title = "";
+            this.status ="";
+            this.description ="";
+            
+        },
+        deletePost(bookID) {
+            
+            let id = bookID;
+         
+            
+            let URL = 'http://localhost:8000/api/books/' + id;
+            
+            axios
+            .delete(URL)
+            .then(res => {
+                this.getBooks();
+              
+            });
+        },
+
+        edit_post(book){
+            this.isAdd= false
+            this.isUpdate = true
+            this.id = book.id;
+            this.author_id= book.author_id;
+            this.title = book.title;
+            this.body = book.body;
+            
+        },
+        UpdateBook(){
+            let URL = 'http://localhost:8000/api/books/' + parseInt(this.id);
+            book=({author_id:parseInt(this.author_id), title:this.title, body:this.body});
+            axios
+                .put(URL, book)
+                .then(res => {
+                
+                this.getBooks(); 
+            });
+            this.isUpdate = false;
+            this.isAdd =true;
+
+
+        }
+    },
+    mounted() {
+        this.getBooks();
+    },
+    
+})
+</script>
+</html>
